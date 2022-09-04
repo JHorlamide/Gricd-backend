@@ -17,6 +17,9 @@ app.use(express.urlencoded({ extended: true }));
 /* File upload config */
 let directory_name = path.resolve();
 app.use('/uploads', express.static(path.join(directory_name, '/uploads')));
+app.use('/', (req, res) => {
+   res.send("Welcome your gricd API")
+})
 
 const productRoute = new ProductRoute();
 productRoute.routes(app);
