@@ -4,6 +4,7 @@ import { ProductService } from '../services/product.route';
 import expressAsyncHandler from 'express-async-handler';
 import readXlsxFile from 'read-excel-file/node';
 import excel from 'exceljs';
+import fs from 'fs';
 
 class ProductController {
    constructor(private readonly productService: ProductService) { }
@@ -45,10 +46,10 @@ class ProductController {
 
       rows.forEach((row) => {
          const product = {
-            name: row[0],
-            price: row[1],
-            quantity: row[2],
-            image: row[3]
+            name: row[1],
+            price: row[2],
+            quantity: row[3],
+            image: row[4]
          }
 
          products.push(product);
@@ -58,7 +59,7 @@ class ProductController {
 
       res.status(201).send({
          status: true,
-         message: `Uploaded the file successfully ${req.file.originalname}`,
+         message: `Products uploaded successfully ${req.file.originalname}`,
          data: createdProducts
       })
    })
@@ -89,11 +90,31 @@ class ProductController {
       ];
 
       worksheet.addRows(product_list);
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader("Content-Disposition", "attachment; filename=" + testFile);
 
-      await workbook.xlsx.write(res);
-      res.status(200).end();
+      const directory_name = path.resolve();
+      const reportName = "report" + testFile;
+      const reportPath = path.join(directory_name + "/uploads/", reportName);
+
+      await workbook.xlsx.writeFile(reportPath);
+
+      fs.readFile(reportPath, (error, file) => {
+         if (error) {
+            return console.log("Error with file download: ", [error]);
+         }
+
+         res.setHeader("Content-Type", "application/xlsx");
+         res.setHeader(
+            "Content-Disposition",
+            `attachment; filename="${reportName}"`
+         );
+
+         res.download(reportPath)
+         res.status(200)
+         res.send({
+            status: true,
+            data: file
+         });
+      });
    })
 }
 
