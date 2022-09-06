@@ -108,12 +108,7 @@ class ProductController {
             `attachment; filename="${reportName}"`
          );
 
-         res.download(reportPath)
-         res.status(200)
-         res.send({
-            status: true,
-            data: file
-         });
+         res.status(200).send(file);
       });
    })
 }
